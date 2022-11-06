@@ -1,6 +1,16 @@
 import functools
 import os
 from pathlib import Path
+from abc import ABCMeta, abstractmethod
+
+
+# -------------------------- Abstract class --------------------------
+
+
+class AbstractNoteBookAssistant(metaclass=ABCMeta):
+    @abstractmethod
+    def run_notes_assistant(self):
+        pass
 
 
 # -------------------------- class NoteBook --------------------------
@@ -121,10 +131,7 @@ class NoteBook:
             return first_string + note_names
 
 
-# -------------------------- class CLINoteBook --------------------------
-
-
-NOTEBOOK = NoteBook()
+# -------------------------- exist check & error decorator --------------------------
 
 
 def is_exist(note):
@@ -150,26 +157,32 @@ def command_error_handler(func):
     return wrapper
 
 
-class CLINoteBook:
+# -------------------------- class CLINoteBook --------------------------
+
+
+NOTEBOOK = NoteBook()
+
+
+class CLINoteBookAssistant(AbstractNoteBookAssistant):
 
     @staticmethod
     def help_handler():
         return ("""
 You can use the following commands for your NoteBook:
-    - add note -> to create new note and save into folder 'notes';
+    - add note ->  to create new note and save into folder 'notes';
     - read note -> to open indicated note and read text inside;
     - delete note -> to delete indicated note from the folder;
 
     - find by tag -> to find all notes that are matched with this tag;
     - find by name -> to find notes that are matched with this name;
-    - show all notes -> to show list of notes that were saved in folder;
+    - show all -> to show list of notes that were saved in folder;
 
     - add tag -> to include additional tag to existing note;
     - add text -> to include additional text to existing note;
-    - change tag -> to change existing tag in note (recommend to read note first);
-    - change text -> to change existing text in note (recommend to read note first);
-    - delete tag -> to delete existing tag in note (recommend to read note first);
-    - delete text -> to delete existing text in note (recommend to read note first);
+    - change tag -> to change existing tag in note;
+    - change text -> to change existing text in note;
+    - delete tag -> to delete existing tag in note;
+    - delete text -> to delete existing text in note;
     """)
 
     @command_error_handler
@@ -380,10 +393,9 @@ You can use the following commands for your NoteBook:
         "change text": change_text_handler,
         "delete tag": delete_tag_handler,
         "delete text": delete_text_handler,
-        }
+    }
 
-    @staticmethod
-    def run_notes_assistant():
+    def run_notes_assistant(self=None):
 
         folder = os.path.join(Path().resolve(), 'notes')
         if not os.path.exists(folder):
@@ -399,28 +411,27 @@ You can use the following commands for your NoteBook:
             command = input("Please enter your command: ").lower().strip()
 
             if command == "close":
-                # raise SystemExit("\nThank you for using NoteBook Bot.\nSee you later!\n")
                 return "\nThank you for using NoteBook Bot.\nSee you later!\n"
-                # break
 
-            elif command in CLINoteBook.notes_commands_dict.keys():
-                handler = CLINoteBook.notes_commands_dict[command]
+            elif command in CLINoteBookAssistant.notes_commands_dict.keys():
+                handler = CLINoteBookAssistant.notes_commands_dict[command]
                 answer = handler()
                 print(answer)
 
             else:
                 list_comm = []
-                for k in CLINoteBook.notes_commands_dict.keys():
+                for k in CLINoteBookAssistant.notes_commands_dict.keys():
                     for item in k.split():
                         if command in item:
                             list_comm.append(k)
                             break
                 if list_comm:
-                    print('You mean these commands: ')
+                    print('You mean these commands? ')
                     print(*list_comm, sep=', ')
                 else:
-                    print("Incorrect input.\nPlease check and enter correct command (or 'help' or 'close').")
+                    print("Incorrect input.\nPlease check and enter correct command \n"
+                          "(or 'help' or 'close').")
 
 
 if __name__ == '__main__':
-    CLINoteBook.run_notes_assistant()
+    CLINoteBookAssistant.run_notes_assistant()

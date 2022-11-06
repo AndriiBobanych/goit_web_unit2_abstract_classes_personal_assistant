@@ -3,6 +3,16 @@ import pickle
 import functools
 from datetime import datetime
 import re
+from abc import ABCMeta, abstractmethod
+
+
+# -------------------------- Abstract class  --------------------------
+
+
+class AbstractPhoneBookAssistant(metaclass=ABCMeta):
+    @abstractmethod
+    def run_phone_assistant(self):
+        pass
 
 
 # -------------------------- class Field --------------------------
@@ -315,19 +325,6 @@ class PhonebookInputParser:
 
     @parser_error_handler
     def parse_user_input(self, user_input: str) -> tuple[str, list]:
-        # if user_input not in book_commands_dict:
-        #     list_comm = []
-        #     for k in book_commands_dict:
-        #         for item in k.split():
-        #             if user_input in item:
-        #                 list_comm.append(k)
-        #                 break
-        #     if list_comm:
-        #         print('You mean these commands: ')
-        #         print(*list_comm,sep=', ')
-        #     else:
-        #         print("Incorrect input.\nPlease check and enter correct command (or 'help' or 'close').")
-        # else:
         for command in book_commands_dict:
             normalized_input = " ".join(user_input.strip().split(" "))
             if normalized_input.startswith(command):
@@ -352,9 +349,9 @@ class PhonebookInputParser:
             return f"add_address", [username]
         else:
             if len(command) != 4:
-                raise ValueError 
+                raise ValueError
             username, value = command[2:]
-            return f"add_{field_name}", [username, value] 
+            return f"add_{field_name}", [username, value]
 
     def _change(self, user_input: str):
         command = user_input.strip().split(" ")
@@ -368,9 +365,9 @@ class PhonebookInputParser:
             return f"change_address", [username]
         else:
             if len(command) != 5:
-                raise ValueError 
+                raise ValueError
             username, value, new_value = command[2:]
-            return f"change_{field_name}", [username, value, new_value] 
+            return f"change_{field_name}", [username, value, new_value]
 
     def _delete(self, user_input: str):
         command = user_input.strip().split(" ")
@@ -384,9 +381,9 @@ class PhonebookInputParser:
             return f"delete_{field_name}", [username]
         else:
             if len(command) != 4:
-                raise ValueError 
+                raise ValueError
             username, value = command[2:]
-            return f"delete_{field_name}", [username, value] 
+            return f"delete_{field_name}", [username, value]
 
     def _nearby_birthday(self, user_input: str):
         command = user_input.strip().split(" ")
@@ -415,28 +412,16 @@ class PhonebookInputParser:
         else:
             raise ValueError
 
-    # def _close(self, user_input: str):
-    #     if user_input.lower().strip() in ("good bye", "close", "exit"):
-    #         return "exit", []
-    #     else:
-    #         raise ValueError
-    #
-    # def _good_bye(self, user_input: str):
-    #     return self._exit(user_input)
-    #
-    # def _close(self, user_input: str):
-    #     return self._exit(user_input)
+
+# -------------------------- class CLIPhoneBookAssistant --------------------------
 
 
-# -------------------------- class CLIPhoneBook --------------------------
-
-
-class CLIPhoneBook:
+class CLIPhoneBookAssistant(AbstractPhoneBookAssistant):
     def __init__(self):
         self._book = None
         self._parsers = PhonebookInputParser()
 
-    @command_error_handler 
+    @command_error_handler
     def help_handler(self, *args):
         return """You can use the following commands for your phonebook:
     //first command - than arguments//
@@ -462,12 +447,12 @@ class CLIPhoneBook:
     - close -> to finish work and return to main menu;
     """
 
-    @command_error_handler 
+    @command_error_handler
     def add_contact_handler(self):
         username = input("Please enter name: ")
         if self._book.find_by_name(username) == "No matches.":
             phone = input("Please enter phone: ")
-            if phone != '' and phone_validity(phone) == False: 
+            if phone != '' and phone_validity(phone) == False:
                 return "\nIncorrect input. Try again.\n"
             email = input("Please enter email: ")
             if email != '' and email_validity(email) == False:
@@ -481,27 +466,27 @@ class CLIPhoneBook:
             return "Contact was added."
         raise ValueError("You already add this contact.")
 
-    @command_error_handler 
+    @command_error_handler
     def add_phone_handler(self, username, value):
-        if phone_validity(value) == False: 
-                return "\nIncorrect input. Try again.\n"
+        if not phone_validity(value):
+            return "\nIncorrect input. Try again.\n"
         if self._book.find_by_name(username) == "No matches.":
             self._book.add_new_contact(name=Name(username), phone=Phone(value))
         else:
             self._book[username].add_to_phone_field(Phone(value))
         return "Number was added."
 
-    @command_error_handler 
+    @command_error_handler
     def add_email_handler(self, username, value):
-        if email_validity(value) == False:
-                return "\nIncorrect input. Try again.\n"
+        if not email_validity(value):
+            return "\nIncorrect input. Try again.\n"
         if self._book.find_by_name(username) == "No matches.":
             self._book.add_new_contact(name=Name(username), email=Email(value))
         else:
             self._book[username].add_to_email_field(Email(value))
         return "Email was added."
 
-    @command_error_handler 
+    @command_error_handler
     def add_address_handler(self, username):
         value = input("Please enter address: ")
         if self._book.find_by_name(username) == "No matches.":
@@ -510,7 +495,7 @@ class CLIPhoneBook:
             self._book[username].add_to_address_field(Address(value))
         return "Address was added."
 
-    @command_error_handler 
+    @command_error_handler
     def add_birthday_handler(self, username, value):
         if birthday_validity(value) == False:
                 return "\nIncorrect input. Try again. Birthday format: dd-mm-yyyy\n"
@@ -520,34 +505,34 @@ class CLIPhoneBook:
             self._book[username].add_to_birthday_field(Birthday(value))
         return "Birthday was added."
 
-    @command_error_handler 
+    @command_error_handler
     def change_phone_handler(self, username, value, new_value):
-        if phone_validity(new_value) == False: 
+        if phone_validity(new_value) == False:
                 return "\nIncorrect input. Try again.\n"
         if self._book.find_by_name(username) == "No matches.":
             return "Contact does not exists!"
         else:
-            return self._book[username].change_phone(value, new_value)        
+            return self._book[username].change_phone(value, new_value)
 
-    @command_error_handler 
+    @command_error_handler
     def change_email_handler(self, username, value, new_value):
-        if email_validity(new_value) == False: 
+        if email_validity(new_value) == False:
                 return "\nIncorrect input. Try again.\n"
         if self._book.find_by_name(username) == "No matches.":
             return "Contact does not exists!"
         else:
-            return self._book[username].change_email(value, new_value)    
+            return self._book[username].change_email(value, new_value)
 
-    @command_error_handler 
+    @command_error_handler
     def change_address_handler(self, username):
         if self._book.find_by_name(username) == "No matches.":
             return "Contact does not exists!"
         else:
             value = input("Please enter old address: ")
             new_value = input("Please enter new address: ")
-            return self._book[username].change_address(value, new_value)    
+            return self._book[username].change_address(value, new_value)
 
-    @command_error_handler 
+    @command_error_handler
     def delete_contact_handler(self, username):
         if self._book.find_by_name(username) != "No matches.":
             self._book.pop(username)
@@ -555,47 +540,47 @@ class CLIPhoneBook:
         else:
             raise ValueError(f"Contact with name '{username}' does not exist in phonebook.")
 
-    @command_error_handler 
+    @command_error_handler
     def delete_phone_handler(self, username, value):
         if self._book.find_by_name(username) != "No matches.":
             return self._book[username].delete_phone(value)
         else:
             raise ValueError(f"Contact with name '{username}' does not exist in phonebook.")
 
-    @command_error_handler 
+    @command_error_handler
     def delete_email_handler(self, username, value):
         if self._book.find_by_name(username) != "No matches.":
             return self._book[username].delete_email(value)
         else:
             raise ValueError(f"Contact with name '{username}' does not exist in phonebook.")
 
-    @command_error_handler 
+    @command_error_handler
     def delete_address_handler(self, username, value):
         if self._book.find_by_name(username) != "No matches.":
             return self._book[username].delete_address(value)
         else:
             raise ValueError(f"Contact with name '{username}' does not exist in phonebook.")
 
-    @command_error_handler 
+    @command_error_handler
     def delete_birthday_handler(self, username):
         if self._book.find_by_name(username) != "No matches.":
             return self._book[username].delete_birthday()
         else:
             raise ValueError(f"Contact with name '{username}' does not exist in phonebook.")
 
-    @command_error_handler 
+    @command_error_handler
     def nearby_birthday_handler(self, days):
         return self._book.nearby_birthday(days)
 
-    @command_error_handler 
+    @command_error_handler
     def find_handler(self, pattern):
         return self._book.find_by_name(pattern)
 
-    @command_error_handler 
+    @command_error_handler
     def show_all_handler(self, *args):
         return next(self._book_iterator)
 
-    @command_error_handler 
+    @command_error_handler
     def close_handler(self, *args):
         raise SystemExit("\nThank you for using ContactBook Bot.\nSee you later!\n")
 
@@ -624,49 +609,9 @@ class CLIPhoneBook:
                     print(command_response)
                 except SystemExit as e:
                     return str(e)
-                    # print(str(e))
-                    # break
-
-        # with ContactBook() as book:
-        #     self.setup_book(book)
-        #     self._book_iterator = iter(self._book)
-        #
-        #     print('It is Your Contact Book.\n'
-        #           'You can enter "help" to get a list of commands, "close" - return to main menu.')
-        #     while True:
-        #         user_input = input("Please enter command: ")
-        #
-        #         if user_input == "close":
-        #             raise SystemExit("\nThank you for using NoteBook.\nSee you later!\n")
-        #
-        #         elif user_input.split() != 2:
-        #             list_comm = []
-        #             for k in book_commands_dict:
-        #                 for item in k.split():
-        #                     if user_input in item:
-        #                         list_comm.append(k)
-        #                         break
-        #
-        #             if list_comm:
-        #                 print('You mean these commands: ')
-        #                 print(*list_comm,sep=', ')
-        #             else:
-        #                 print("Incorrect input.\nPlease check and enter correct command (or 'help' or 'close').")
-        #
-        #         else:
-        #             result = self._parsers.parse_user_input(user_input=user_input)
-        #             command, arguments = result
-        #             command_function = getattr(self, command.replace(" ", "_") + "_handler")
-        #             command_response = command_function(*arguments)
-        #             print(command_response)
-
-
-# def run_phone_assistant():
-#     ph_bot = CLIPhoneBook()
-#     ph_bot.run_phone_assistant()
 
 
 if __name__ == "__main__":
-    cli = CLIPhoneBook()
+    cli = CLIPhoneBookAssistant()
     cli.run_phone_assistant()
 

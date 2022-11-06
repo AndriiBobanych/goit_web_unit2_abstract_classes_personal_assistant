@@ -1,8 +1,8 @@
-from main_phone_book import CLIPhoneBook
-from main_note_book import CLINoteBook
+from main_phone_book import CLIPhoneBookAssistant
+from main_note_book import CLINoteBookAssistant
 
 
-CLIpb = CLIPhoneBook()
+CLI_pb_assist = CLIPhoneBookAssistant()
 
 
 def bot_help():
@@ -13,9 +13,8 @@ def bot_help():
 
 
 bot_command_dict = {
-    # "1": CLIPhoneBook.run_phone_assistant,
-    "1": CLIpb.run_phone_assistant,
-    "2": CLINoteBook.run_notes_assistant,
+    "1": CLI_pb_assist.run_phone_assistant,
+    "2": CLINoteBookAssistant.run_notes_assistant,
     "#": bot_help,
     }
 
