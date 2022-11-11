@@ -1,18 +1,17 @@
 # Description for HW-2 (web course)
 
-ЗМІНИТИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-This is a package with 2 modules:
- - class counter
- - class serializer
+This is a package with 3 modules:
+ - main code runner for CLI bot
+ - phonebook module
+ - notebook module
 
 Was prepared as a homework for unit 2 of Python web course at CoIT school.
 
-ЗМІНИТИ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Contain:  
- - Meta classes
- - Parent <-> children
- - Serializing
- - Deserializing
+ - Abstract classes
+ - UML diagram
+ - Main code classes
+ - Decorators
 
 
 Main package with modules is located here  
