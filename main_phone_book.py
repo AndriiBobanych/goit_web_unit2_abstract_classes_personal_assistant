@@ -9,6 +9,18 @@ from abc import ABCMeta, abstractmethod
 # -------------------------- Abstract class  --------------------------
 
 
+class AbstractContactBook(metaclass=ABCMeta):
+    @abstractmethod
+    def add_new_contact(self):
+        pass
+
+
+class AbstractPhonebookInputParser(metaclass=ABCMeta):
+    @abstractmethod
+    def parse_user_input(self, user_input):
+        pass
+
+
 class AbstractPhoneBookAssistant(metaclass=ABCMeta):
     @abstractmethod
     def run_phone_assistant(self):
@@ -127,7 +139,7 @@ class Record:
         return f"Contact does not contain such address: {address}"
 
     def delete_birthday(self):
-        if self.birthday == None:
+        if self.birthday is None:
             return "Contact doesn't have birthday."
         self.birthday.value = None
         return "Done!"
@@ -136,7 +148,7 @@ class Record:
 # -------------------------- class ContactBook --------------------------
 
 
-class ContactBook(UserDict):
+class ContactBook(AbstractContactBook, UserDict):
     __book_name = "contact_book.pickle"
     __items_per_page = 10
 
@@ -321,7 +333,7 @@ book_commands_dict = {
     }
 
 
-class PhonebookInputParser:
+class PhonebookInputParser(AbstractPhonebookInputParser):
 
     @parser_error_handler
     def parse_user_input(self, user_input: str) -> tuple[str, list]:

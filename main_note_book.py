@@ -7,6 +7,12 @@ from abc import ABCMeta, abstractmethod
 # -------------------------- Abstract class --------------------------
 
 
+class AbstractNoteBook(metaclass=ABCMeta):
+    @abstractmethod
+    def add_note(self):
+        pass
+
+
 class AbstractNoteBookAssistant(metaclass=ABCMeta):
     @abstractmethod
     def run_notes_assistant(self):
@@ -16,7 +22,7 @@ class AbstractNoteBookAssistant(metaclass=ABCMeta):
 # -------------------------- class NoteBook --------------------------
 
 
-class NoteBook:
+class NoteBook(AbstractNoteBook):
 
     @staticmethod
     def add_note(note, tag, text):
